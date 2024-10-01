@@ -1,95 +1,61 @@
+'use client'
 import Image from "next/image";
 import styles from "./page.module.css";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function Home() {
+  const [text, setText] = useState("");
+  const [images, setImage] = useState([]);
+  const[loading, setLoading]=useState(false)
+
+  
+    const fetchGif = async ()=>{
+      setImage([])
+      setLoading(true);
+      try{
+        const response = await axios.get(`http://localhost:4000/data/${text}`)
+        setImage(response.data.data)
+        console.log(response.data.data)
+      }catch(error){
+        console.log(error);
+      }finally{
+        setLoading(false);
+      }
+    }
+  
+  const handleChange = (e) => {
+    setText(e.target.value);
+  };
+  const handleSubmit =async (e) => {
+    e.preventDefault();
+    fetchGif()
+  };
+  const handleDelete =async()=>{
+    const response = await axios.delete(`http://localhost:4000/delete`)
+  }
   return (
     <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="username">Buscador:</label>
+          <input
+            id="text"
+            type="text"
+            value={text}
+            onChange={handleChange}
+            required
+          />
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <button type="submit">Buscar</button> 
+      </form>
+      <button onClick={handleDelete}>Eliminar</button>
+      {loading && <p>Cargando imágenes...</p>}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '20px', maxHeigh:'400px',overflowY:'auto',border:'1px solid #ccc' }}>
+      {images.map((image, index) => (
+          <img key={index} src={image.data} alt={`Imagen ${index + 1}`} style={{ width: '150px', height: '150px', objectFit: 'cover' }} />
+        ))}
+      </div>
     </div>
   );
 }
